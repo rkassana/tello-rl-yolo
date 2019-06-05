@@ -12,7 +12,7 @@ import threading
 import queue
 from PIL import Image
 from yolo import YOLO
-from agents.agent import DDPG
+from agents.rl_drone import RLAgent
 
 
 LOG_FILENAME = 'output.log'
@@ -28,7 +28,9 @@ FPS = 25
 
 
 yolov3 = YOLO()
-agent = DDPG()
+agent = RLAgent()
+ENV_NAME = 'drone'
+agent.agent.load_weights('ddpg_{}_weights.h5f'.format(ENV_NAME))
 
 
 class FrontEnd(object):
