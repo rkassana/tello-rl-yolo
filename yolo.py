@@ -131,7 +131,7 @@ class YOLO(object):
         person_boxes = []
         for i, c in reversed(list(enumerate(out_classes))):
             predicted_class = self.class_names[c]
-            if predicted_class != 'person':
+            if predicted_class != 'person' or out_scores[i]<0.30:
                 continue
             box = out_boxes[i]
             person_boxes.append(box)

@@ -61,6 +61,7 @@ class FrontEnd(object):
         self.up_down_velocity = 0
         self.yaw_velocity = 0
         self.speed = 60
+        self.max_area=960.0*720.0
 
         self.send_rc_control = False
 
@@ -124,9 +125,24 @@ class FrontEnd(object):
             if len(boxes) > 0:
                 box = boxes[0]
                 top, left, bottom, right = box
+                area = (bottom-top)*(right-left)
+                area_p= (area/self.max_area)*100.0
                 box_x = int(((right - left) / 2) + left)
                 box_y = int(((bottom - top) / 2) + top)
+                actions = agent.agent.forward([box_x,box_y])
+                self.yaw_velocity = -int(actions[0])
+                self.up_down_velocity = int(actions[1])
+                if area_p < 30:
+                    self.for_back_velocity = 30
+                elif area_p > 50:
+                    self.for_back_velocity = -30
+                else:
+                    self.for_back_velocity=0
                 frame = cv2.circle(frame, (box_x, box_y), 5, (255, 0, 0), -1)
+            else:
+                self.yaw_velocity = 0
+                self.up_down_velocity = 0
+                self.for_back_velocity = 0
 
             frame = cv2.circle(frame, (480, 360), 5, (0, 0, 255), -1)
             frame = np.rot90(frame)
@@ -183,15 +199,6 @@ class FrontEnd(object):
         elif key == pygame.K_l:  # land
             self.tello.land()
             self.send_rc_control = False
-
-    def track(self, xmin , xmax , ymin , ymax):
-        """ Update velocities based on key released
-        Arguments:
-            xmin
-            xmax
-            ymin
-            ymax
-        """
 
 
     def update(self):

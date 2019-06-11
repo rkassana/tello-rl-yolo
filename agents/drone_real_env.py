@@ -8,7 +8,7 @@ import gym
 from gym import spaces
 from gym.utils import seeding
 
-class drone_sim(gym.Env):
+class drone_real(gym.Env):
     metadata = {
         'render.modes': ['human', 'rgb_array'],
         'video.frames_per_second': 30
@@ -20,7 +20,6 @@ class drone_sim(gym.Env):
         self.min_position = 0
         self.max_positionx = 960
         self.max_positiony = 720
-        self.max_speed = 0.07
         self.goal_position = np.array([480,360])
 
         self.low_state = np.array([self.min_position,self.min_position])
@@ -30,7 +29,6 @@ class drone_sim(gym.Env):
 
         self.action_space = spaces.Box(low=self.min_action, high=self.max_action,
                                        shape=(2,), dtype=np.float32)
-        print(self.action_space.sample())
         self.observation_space = spaces.Box(low=self.low_state, high=self.high_state,
                                             dtype=np.float32)
 
@@ -44,23 +42,15 @@ class drone_sim(gym.Env):
     def step(self, action):
 
         done=False
-        positionx = self.state[0]
-        positiony = self.state[1]
-        forcex = min(max(action[0], -60.0), 60.0)
-        forcey = min(max(action[1], -60.0), 60.0)
         reward=0
-        positionx += forcex
-        positiony += forcey
-        if (positionx > self.max_positionx): positionx = self.max_positionx
-        if (positionx < self.min_position): positionx = self.min_position
-        if (positiony > self.max_positiony): positiony = self.max_positiony
-        if (positiony < self.min_position): positiony = self.min_position
-        position = np.array([positionx, positiony])
         dist = self.get_dist()
         reward -= dist*0.25 if dist>100 else -(100- dist)
-        self.state = position
 
         return self.state, reward, done, {}
+
+    def update_state(self,posx,posy):
+        self.state[0] = posx
+        self.state[1] = posy
 
     def reset(self):
         self.state = np.array([self.np_random.uniform(low=0, high=960),self.np_random.uniform(low=0, high=720)])

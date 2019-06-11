@@ -7,7 +7,7 @@ from keras.initializers import RandomUniform
 from rl.agents import DDPGAgent
 from rl.memory import SequentialMemory
 from rl.random import OrnsteinUhlenbeckProcess
-from agents.drone_real_env import drone_real
+from agents.drone_sim_env import drone_sim
 
 
 class RLAgent:
@@ -16,15 +16,15 @@ class RLAgent:
         ENV_NAME = 'drone'
         # Get the environment and extract the number of actions.
         #env = gym.make(ENV_NAME)
-        self.env = drone_real()
+        env=drone_sim()
         np.random.seed(123)
-        self.env.seed(123)
-        assert len(self.env.action_space.shape) == 1
-        nb_actions = self.env.action_space.shape[0]
+        env.seed(123)
+        assert len(env.action_space.shape) == 1
+        nb_actions = env.action_space.shape[0]
 
         # Next, we build a very simple model.
         self.actor = Sequential()
-        self.actor.add(Flatten(input_shape=(1,) + self.env.observation_space.shape))
+        self.actor.add(Flatten(input_shape=(1,) + env.observation_space.shape))
         self.actor.add(Dense(16))
         self.actor.add(Activation('relu'))
         self.actor.add(Dense(16))
@@ -32,11 +32,11 @@ class RLAgent:
         self.actor.add(Dense(16))
         self.actor.add(Activation('relu'))
         self.actor.add(Dense(nb_actions,activation='tanh',kernel_initializer=RandomUniform()))
-        self.actor.add(Lambda(lambda x: x * 30.0))
+        self.actor.add(Lambda(lambda x: x * 60.0))
         print(self.actor.summary())
 
         action_input = Input(shape=(nb_actions,), name='action_input')
-        observation_input = Input(shape=(1,) + self.env.observation_space.shape, name='observation_input')
+        observation_input = Input(shape=(1,) + env.observation_space.shape, name='observation_input')
         flattened_observation = Flatten()(observation_input)
         x = Concatenate()([action_input, flattened_observation])
         x = Dense(32)(x)
@@ -66,9 +66,10 @@ class RLAgent:
 
 # After training is done, we save the final weights.
 #agent.save_weights('ddpg_{}_weights.h5f'.format(ENV_NAME), overwrite=True)
-#ENV_NAME = 'drone'
-#agent=RLAgent()
-#agent.agent.load_weights('ddpg_{}_weights.h5f'.format(ENV_NAME))
-#print(agent.agent.forward([475,350]))
+ENV_NAME = 'drone'
+env=drone_sim()
+agent=RLAgent()
+agent.agent.load_weights('ddpg_{}_weights.h5f'.format(ENV_NAME))
+print(agent.agent.forward([475,350]))
 # Finally, evaluate our algorithm for 5 episodes.
 
