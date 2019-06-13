@@ -31,7 +31,7 @@ class RLAgent:
         self.actor.add(Dense(16))
         self.actor.add(Activation('relu'))
         self.actor.add(Dense(nb_actions,activation='tanh',kernel_initializer=RandomUniform()))
-        self.actor.add(Lambda(lambda x: x * 30.0))
+        self.actor.add(Lambda(lambda x: x * 60.0))
         print(self.actor.summary())
 
         action_input = Input(shape=(nb_actions,), name='action_input')
