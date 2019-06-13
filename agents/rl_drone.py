@@ -7,16 +7,15 @@ from keras.initializers import RandomUniform
 from rl.agents import DDPGAgent
 from rl.memory import SequentialMemory
 from rl.random import OrnsteinUhlenbeckProcess
-from agents.drone_real_env import drone_real
 
 
 class RLAgent:
 
-    def __init__(self):
+    def __init__(self, env):
         ENV_NAME = 'drone'
         # Get the environment and extract the number of actions.
         #env = gym.make(ENV_NAME)
-        self.env = drone_real()
+        self.env = env
         np.random.seed(123)
         self.env.seed(123)
         assert len(self.env.action_space.shape) == 1
@@ -58,17 +57,4 @@ class RLAgent:
                           memory=memory, nb_steps_warmup_critic=100, nb_steps_warmup_actor=100,
                           random_process=random_process, gamma=.99, target_model_update=1e-3)
         self.agent.compile(Adam(lr=.001, clipnorm=1.), metrics=['mae'])
-
-# Okay, now it's time to learn something! We visualize the training here for show, but this
-# slows down training quite a lot. You can always safely abort the training prematurely using
-# Ctrl + C.
-#agent.fit(env, nb_steps=100000, visualize=True, verbose=1, nb_max_episode_steps=10)
-
-# After training is done, we save the final weights.
-#agent.save_weights('ddpg_{}_weights.h5f'.format(ENV_NAME), overwrite=True)
-#ENV_NAME = 'drone'
-#agent=RLAgent()
-#agent.agent.load_weights('ddpg_{}_weights.h5f'.format(ENV_NAME))
-#print(agent.agent.forward([475,350]))
-# Finally, evaluate our algorithm for 5 episodes.
 

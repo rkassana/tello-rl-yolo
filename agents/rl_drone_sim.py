@@ -66,10 +66,9 @@ class RLAgent:
 
 # After training is done, we save the final weights.
 #agent.save_weights('ddpg_{}_weights.h5f'.format(ENV_NAME), overwrite=True)
-ENV_NAME = 'drone'
-env=drone_sim()
-agent=RLAgent()
-agent.agent.load_weights('ddpg_{}_weights.h5f'.format(ENV_NAME))
-print(agent.agent.forward([475,350]))
+#ENV_NAME = 'drone'
+#env=drone_sim()
+#agent=RLAgent()
+#agent.agent.load_weights('ddpg_{}_weights.h5f'.format(ENV_NAME))
 # Finally, evaluate our algorithm for 5 episodes.
 
