@@ -2,7 +2,7 @@
 Tello drone implementation with YOLO and DDPG control
 
 
-IN PROGRESS
+# IN PROGRESS #
 
 
 Inspired from :
