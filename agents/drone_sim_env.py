@@ -41,21 +41,34 @@ class drone_sim(gym.Env):
 
     def step(self, action):
 
-        done=False
+        done =False
         positionx = self.state[0]
         positiony = self.state[1]
         forcex = min(max(action[0], -60.0), 60.0)
         forcey = min(max(action[1], -60.0), 60.0)
-        reward=0
+        reward = 0
         positionx += forcex
         positiony += forcey
-        if (positionx > self.max_positionx): positionx = self.max_positionx
-        if (positionx < self.min_position): positionx = self.min_position
-        if (positiony > self.max_positiony): positiony = self.max_positiony
-        if (positiony < self.min_position): positiony = self.min_position
+
+        if (positionx > self.max_positionx):
+            positionx = self.max_positionx
+            done = True
+        if (positionx < self.min_position):
+            positionx = self.min_position
+            done = True
+        if (positiony > self.max_positiony):
+            positiony = self.max_positiony
+            done = True
+        if (positiony < self.min_position):
+            positiony = self.min_position
+            done = True
+
         position = np.array([positionx, positiony])
         dist = self.get_dist()
-        reward -= dist*0.25 if dist>100 else -(100- dist)
+        if dist < 5:
+            done = True
+            reward += 10
+        reward -= dist*0.25 if dist > 100 else -(100 - dist)
         self.state = position
 
         return self.state, reward, done, {}

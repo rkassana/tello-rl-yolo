@@ -73,7 +73,8 @@ def box_thread():
                 actions_f = []
                 for box in boxes:
                     if box.get_label() == 14:
-                        # logging.debug('box located xmin : %d, xmax : %d, ymin: %d, ymax: %d' % (box.xmin, box.xmax, box.ymin, box.ymax))
+                        # logging.debug('box located xmin : %d, xmax : %d, ymin: %d, ymax: %d' %
+                        # (box.xmin, box.xmax, box.ymin, box.ymax))
                         box_x = int((box.xmax - box.xmin) / 2) + box.xmin
                         box_y = int((box.ymax - box.ymin) / 2) + box.ymin
                         actions = agent.agent.forward([box_x, box_y])
@@ -83,6 +84,7 @@ def box_thread():
                 print('thread : box, cmd sent')
         except Exception as e:
             print(e)
+
 
 thread_box = threading.Thread(target=box_thread, args=())
 thread_box.setDaemon(True)
@@ -191,14 +193,13 @@ class FrontEnd(object):
             box_x = 0
             box_y = 0
 
-
             if len(box_list) > 0:
                 box_cnt = 0
                 area = (box.xmax - box.xmin) * (box.ymax - box.ymin)
                 area_p = (area / 691200.) * 100.0
                 draw_boxes(frame, box_list, config['model']['labels'], obj_thresh)
                 self.yaw_velocity = -int(actions[0])
-                last_yaw=self.yaw_velocity
+                last_yaw = self.yaw_velocity
                 self.up_down_velocity = int(actions[1])
                 if area_p < 30:
                     self.for_back_velocity = 60
@@ -211,7 +212,7 @@ class FrontEnd(object):
             else:
                 box_cnt += 1
                 if box_cnt > 25:
-                    self.yaw_velocity=last_yaw
+                    self.yaw_velocity = last_yaw
                 else:
                     self.yaw_velocity = 0
                     self.up_down_velocity = 0
@@ -231,7 +232,6 @@ class FrontEnd(object):
         # Call it always before finishing. I deallocate resources.
         self.tello.end()
         out.release()
-
 
     def keydown(self, key):
         """ Update velocities based on key pressed
@@ -280,6 +280,7 @@ class FrontEnd(object):
         if self.send_rc_control:
             self.tello.send_rc_control(self.left_right_velocity, self.for_back_velocity, self.up_down_velocity,
                                        self.yaw_velocity)
+
     def reset_speed(self):
         """ Update routine. Send velocities to Tello."""
         if self.send_rc_control:
