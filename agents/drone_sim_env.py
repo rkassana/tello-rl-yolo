@@ -44,11 +44,11 @@ class drone_sim(gym.Env):
         done =False
         positionx = self.state[0]
         positiony = self.state[1]
-        forcex = min(max(action[0], -60.0), 60.0)
-        forcey = min(max(action[1], -60.0), 60.0)
+        forcex = action[0]
+        forcey = action[1]
         reward = 0
-        positionx += forcex
-        positiony += forcey
+        positionx += forcex*2.0
+        positiony += forcey*2.0
 
         if (positionx > self.max_positionx):
             positionx = self.max_positionx
@@ -65,9 +65,8 @@ class drone_sim(gym.Env):
 
         position = np.array([positionx, positiony])
         dist = self.get_dist()
-        if dist < 5:
+        if dist < 100:
             done = True
-            reward += 10
         reward -= dist*0.25 if dist > 100 else -(100 - dist)
         self.state = position
 
