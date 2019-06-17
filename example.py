@@ -80,7 +80,7 @@ def box_thread():
                         actions = agent.agent.forward([box_x, box_y])
                         actions_f.append(actions)
                         filter_boxes.append(box)
-                box_q.put((filter_boxes, actions_f))
+                box_q.put(([filter_boxes[0]], [actions_f[0]]))
                 print('thread : box, cmd sent')
         except Exception as e:
             print(e)
