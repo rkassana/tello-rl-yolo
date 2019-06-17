@@ -61,6 +61,8 @@ def box_thread():
     agent = RLAgent(env)
     agent.agent.load_weights('ddpg_{}_weights.h5f'.format(ENV_NAME))
 
+    logging.debug('x,y,area_p,Ax,Ay')
+
     while True:
         try:
             print('thread size: ' + str(len(frame_glob)))
@@ -73,10 +75,11 @@ def box_thread():
                 actions_f = []
                 for box in boxes:
                     if box.get_label() == 14:
-                        # logging.debug('box located xmin : %d, xmax : %d, ymin: %d, ymax: %d' %
-                        # (box.xmin, box.xmax, box.ymin, box.ymax))
+                        area = (box.xmax - box.xmin) * (box.ymax - box.ymin)
+                        area_p = (area / 691200.) * 100.0
                         box_x = int((box.xmax - box.xmin) / 2) + box.xmin
                         box_y = int((box.ymax - box.ymin) / 2) + box.ymin
+                        logging.debug('%d,%d,%d,%d,%d' % (box_x, box_y, area_p, actions[0], actions[1]))
                         actions = agent.agent.forward([box_x, box_y])
                         actions_f.append(actions)
                         filter_boxes.append(box)
@@ -91,6 +94,9 @@ thread_box.setDaemon(True)
 thread_box.start()
 
 
+def get_dist(x, y):
+    dist = np.sqrt((np.square(np.array([x, y]) - np.array([480, 360]))).sum())
+    return dist
 
 class FrontEnd(object):
     """ Maintains the Tello display and moves it through the keyboard keys.
@@ -197,21 +203,30 @@ class FrontEnd(object):
                 box_cnt = 0
                 area = (box.xmax - box.xmin) * (box.ymax - box.ymin)
                 area_p = (area / 691200.) * 100.0
+                box_x = int((box.xmax - box.xmin) / 2) + box.xmin
+                box_y = int((box.ymax - box.ymin) / 2) + box.ymin
                 draw_boxes(frame, box_list, config['model']['labels'], obj_thresh)
-                self.yaw_velocity = -int(actions[0])
-                last_yaw = self.yaw_velocity
-                self.up_down_velocity = int(actions[1])
-                if area_p < 30:
-                    self.for_back_velocity = 60
-                elif area_p > 50:
-                    self.for_back_velocity = -60
+                done = bool(get_dist(box_x, box_y) < 50 and (30 < area_p < 50))
+
+                if not done:
+                    self.yaw_velocity = -int(actions[0])
+                    last_yaw = self.yaw_velocity
+                    self.up_down_velocity = int(actions[1])
+                    if area_p < 30:
+                        self.for_back_velocity = 60
+                    elif area_p > 50:
+                        self.for_back_velocity = -60
+                    else:
+                        self.for_back_velocity = 0
+                    frame = cv2.circle(frame, (box_x, box_y), 5, (255, 0, 0), -1)
                 else:
+                    self.yaw_velocity = 0
+                    self.up_down_velocity = 0
                     self.for_back_velocity = 0
-                frame = cv2.circle(frame, (box_x, box_y), 5, (255, 0, 0), -1)
 
             else:
                 box_cnt += 1
-                if box_cnt > 25:
+                if box_cnt > 10:
                     self.yaw_velocity = last_yaw
                 else:
                     self.yaw_velocity = 0
