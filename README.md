@@ -5,11 +5,11 @@ This capstone project was realized in the context of the Udacity Machine Learnin
 
 Inspired from :
 
-Keras YOLO V3 implementation : https://github.com/experiencor/keras-yolo3
+- Keras YOLO V3 implementation : https://github.com/experiencor/keras-yolo3
 
-Tello Python wrapper : https://github.com/damiafuentes/DJITelloPy
+- Tello Python wrapper : https://github.com/damiafuentes/DJITelloPy
 
-Drone tracking (DDPG) : Keras-rl / rkassana
+- Drone tracking (DDPG) : Keras-rl / rkassana
 
 # IN PROGRESS #
 
