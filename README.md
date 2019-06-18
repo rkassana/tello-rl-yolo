@@ -4,7 +4,9 @@ Tello drone implementation with YOLO and DDPG control.
 This capstone project was realized in the context of the Udacity Machine Learning Nanodegree.
 
 Dataset:
+
 VOC2012 Train/val : http://pjreddie.com/media/files/VOCtrainval_11-May-2012.tar
+
 VOC2012 Test : http://pjreddie.com/media/files/VOC2012test.tar
 
 Inspired from :
