@@ -26,6 +26,10 @@ Make sure YOLO weight file VOC.h5 is in the root folder.
 
 
 1- Start main.py
+
 2- Once the video is on, it will take 30 seconds for the YOLO and DDPG to initialize (model creation, loading, etc..).
+
 3- Take off using T
+
 4- Drone should track bounding box in screen.
+
