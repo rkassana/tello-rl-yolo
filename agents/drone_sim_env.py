@@ -47,6 +47,8 @@ class drone_sim(gym.Env):
         forcex = action[0]
         forcey = action[1]
         reward = 0
+        
+        # effec of actions on x and y are x2
         positionx += forcex*2.0
         positiony += forcey*2.0
 
