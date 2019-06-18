@@ -107,3 +107,4 @@ ENV/
 
 # mypy
 .mypy_cache/
+voc.h5
