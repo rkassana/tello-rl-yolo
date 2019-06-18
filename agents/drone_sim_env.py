@@ -19,7 +19,7 @@ class drone_sim(gym.Env):
         self.max_positionx = 960
         self.max_positiony = 720
         self.max_speed = 0.07
-        self.goal_position = np.array([480,360])
+        self.goal_position = np.array([480, 360])
 
         self.low_state = np.array([self.min_position,self.min_position])
         self.high_state = np.array([self.max_positionx,self.max_positiony])
@@ -65,8 +65,6 @@ class drone_sim(gym.Env):
 
         position = np.array([positionx, positiony])
         dist = self.get_dist()
-        if dist < 100:
-            done = True
         reward -= dist*0.25 if dist > 100 else -(100 - dist)
         self.state = position
 

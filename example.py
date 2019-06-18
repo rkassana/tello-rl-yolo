@@ -39,6 +39,7 @@ obj_thresh, nms_thresh = 0.90, 0.45
 # Create queue for thread to find box in frame
 box_q = queue.Queue()
 frame_q = queue.Queue()
+global frame_glob
 frame_glob = []
 box_glob = []
 
@@ -47,6 +48,8 @@ box_glob = []
 
 def box_thread():
     """."""
+    global frame_glob
+    frame_glob = []
     ###############################
     #   Load the model for YOLO detection
     ###############################
@@ -60,7 +63,7 @@ def box_thread():
     env = drone_sim()
     agent = RLAgent(env)
     agent.agent.load_weights('ddpg_{}_weights.h5f'.format(ENV_NAME))
-
+    agent.agent.test(env, nb_episodes=1, visualize=False, verbose=1, nb_max_episode_steps=10, start_step_policy=1)
     logging.debug('x,y,area_p,Ax,Ay')
 
     while True:
@@ -69,6 +72,7 @@ def box_thread():
             boxes = \
                 get_yolo_boxes(infer_model, [frame_glob],
                                net_h, net_w, config['model']['anchors'], obj_thresh, nms_thresh)[0]
+            frame_glob = []
             print('ok')
             if len(boxes) > 0:
                 filter_boxes = []
@@ -79,8 +83,8 @@ def box_thread():
                         area_p = (area / 691200.) * 100.0
                         box_x = int((box.xmax - box.xmin) / 2) + box.xmin
                         box_y = int((box.ymax - box.ymin) / 2) + box.ymin
-                        logging.debug('%d,%d,%d,%d,%d' % (box_x, box_y, area_p, actions[0], actions[1]))
                         actions = agent.agent.forward([box_x, box_y])
+                        logging.debug('%d,%d,%d,%d,%d' % (box_x, box_y, area_p, actions[0], actions[1]))
                         actions_f.append(actions)
                         filter_boxes.append(box)
                 box_q.put(([filter_boxes[0]], [actions_f[0]]))
@@ -131,6 +135,7 @@ class FrontEnd(object):
 
         # create update timer
         pygame.time.set_timer(USEREVENT + 1, 50)
+        pygame.time.set_timer(USEREVENT + 2, 250)
 
         # Run thread to find box in frame
         print('init done')
@@ -167,12 +172,16 @@ class FrontEnd(object):
 
         last_yaw=0
         box_cnt = 0
+        frame_glob = []
+        frame = []
 
         while not should_stop:
-
+            frame = frame_read.frame
             for event in pygame.event.get():
                 if event.type == USEREVENT + 1:
                     self.update()
+                if event.type == USEREVENT + 2:
+                    frame_glob = frame
                 elif event.type == QUIT:
                     should_stop = True
                 elif event.type == KEYDOWN:
@@ -187,8 +196,8 @@ class FrontEnd(object):
                 break
 
             self.screen.fill([0, 0, 0])
-            frame = frame_read.frame
-            frame_glob = frame
+
+
             box_list = []
             try:
                 box_list, actions_list = box_q.get_nowait()
@@ -206,13 +215,13 @@ class FrontEnd(object):
                 box_x = int((box.xmax - box.xmin) / 2) + box.xmin
                 box_y = int((box.ymax - box.ymin) / 2) + box.ymin
                 draw_boxes(frame, box_list, config['model']['labels'], obj_thresh)
-                done = bool(get_dist(box_x, box_y) < 50 and (30 < area_p < 50))
+                done = bool(get_dist(box_x, box_y) < 100 and (15 < area_p < 50))
 
                 if not done:
                     self.yaw_velocity = -int(actions[0])
                     last_yaw = self.yaw_velocity
                     self.up_down_velocity = int(actions[1])
-                    if area_p < 30:
+                    if area_p < 25:
                         self.for_back_velocity = 60
                     elif area_p > 50:
                         self.for_back_velocity = -60
