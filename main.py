@@ -25,6 +25,7 @@ S = 60
 # Frames per second of the pygame window display
 FPS = 25
 
+#setting config path for YOLO config
 config_path = './zoo/config_voc.json'
 with open(config_path) as config_buffer:
     config = json.load(config_buffer)
@@ -47,7 +48,10 @@ box_glob = []
 
 
 def box_thread():
-    """."""
+    """box detection thread function. This function receives a frame every 200ms and return corresponding box and actions in a queue
+    input : frame_glob (416x416)
+    output : put box and actions in queue.
+    """
     global frame_glob
     frame_glob = []
     ###############################
@@ -69,36 +73,48 @@ def box_thread():
     while True:
         try:
             print('thread size: ' + str(len(frame_glob)))
+            # call prection function of YOLO algorithm to return boxes
             boxes = \
                 get_yolo_boxes(infer_model, [frame_glob],
                                net_h, net_w, config['model']['anchors'], obj_thresh, nms_thresh)[0]
             frame_glob = []
             print('ok')
-            if len(boxes) > 0:
+            if len(boxes) > 0:          # only if a least one box is detected
                 filter_boxes = []
                 actions_f = []
                 for box in boxes:
-                    if box.get_label() == 14:
-                        area = (box.xmax - box.xmin) * (box.ymax - box.ymin)
+                    if box.get_label() == 14:  # filter on the person class (ID =14)
+                        
+                        #calculate area of bounding box
+                        area = (box.xmax - box.xmin) * (box.ymax - box.ymin) 
                         area_p = (area / 691200.) * 100.0
-                        box_x = int((box.xmax - box.xmin) / 2) + box.xmin
+                        
+                        #calculate center of bounding box
+                        box_x = int((box.xmax - box.xmin) / 2) + box.xmin   
                         box_y = int((box.ymax - box.ymin) / 2) + box.ymin
+                        
+                        #pass x,y coordinate to DDPG to get actions
                         actions = agent.agent.forward([box_x, box_y])
+                        
+                        #log debug info
                         logging.debug('%d,%d,%d,%d,%d' % (box_x, box_y, area_p, actions[0], actions[1]))
+                        
                         actions_f.append(actions)
                         filter_boxes.append(box)
+                #send box, action in queue
                 box_q.put(([filter_boxes[0]], [actions_f[0]]))
                 print('thread : box, cmd sent')
         except Exception as e:
             print(e)
 
-
+# start thread
 thread_box = threading.Thread(target=box_thread, args=())
 thread_box.setDaemon(True)
 thread_box.start()
 
 
 def get_dist(x, y):
+    ""ff""
     dist = np.sqrt((np.square(np.array([x, y]) - np.array([480, 360]))).sum())
     return dist
 
@@ -217,6 +233,7 @@ class FrontEnd(object):
                 draw_boxes(frame, box_list, config['model']['labels'], obj_thresh)
                 done = bool(get_dist(box_x, box_y) < 100 and (15 < area_p < 50))
 
+                #If not done keep setting speeds
                 if not done:
                     self.yaw_velocity = -int(actions[0])
                     last_yaw = self.yaw_velocity
@@ -233,6 +250,7 @@ class FrontEnd(object):
                     self.up_down_velocity = 0
                     self.for_back_velocity = 0
 
+            #if no box is detected set the last yaw command so the drone goes into search.
             else:
                 box_cnt += 1
                 if box_cnt > 10:
