@@ -1,6 +1,10 @@
 # tello-rl-yolo
 Tello drone implementation with YOLO and DDPG control.
 
+
+![](demo.gif)
+
+
 This capstone project was realized in the context of the Udacity Machine Learning Nanodegree.
 
 Dataset:
