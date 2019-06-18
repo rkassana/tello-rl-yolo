@@ -22,7 +22,7 @@ Requirements :
 - CUDA & NVIDA Drivers
 - OpenAI Gym
 
-Make sure YOLO weight file VOC.h5 is in the root folder.
+Make sure YOLO weight file VOC.h5 is in the root folder : https://drive.google.com/open?id=15oONh_eIdz3CkHdwybZeB49rDCpE0X9A
 
 
 1- Start main.py
